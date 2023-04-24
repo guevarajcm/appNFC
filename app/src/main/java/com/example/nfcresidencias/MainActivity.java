@@ -164,7 +164,7 @@ public class MainActivity extends AppCompatActivity {
     }
     private void validateUser(){
         if(!user.isEmpty() && !password.isEmpty()){
-            validateUser("http://192.168.0.137/appNFC/validar_usuario.php");
+            validateUser("http://192.168.1.148/appNFC/validar_usuario.php");
         }else{
             Toast.makeText(MainActivity.this, "No se permiten campos vacíos", Toast.LENGTH_SHORT).show();
         }

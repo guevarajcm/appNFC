@@ -1,5 +1,6 @@
 package com.example.nfcresidencias;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.PendingIntent;
@@ -22,6 +23,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -173,6 +175,7 @@ public class PrincipalActivity extends AppCompatActivity {
                     ndef.writeNdefMessage(messageToWrite);
                     ndef.close();
                     Toast.makeText(this, "Se ha añadido el token a la NFC TAG", Toast.LENGTH_SHORT).show();
+                    insertHash();
                 }
             }catch (FormatException | IOException e){
                 throw new RuntimeException(e);
@@ -228,45 +231,33 @@ public class PrincipalActivity extends AppCompatActivity {
         shaSum = String.format("%064x", new BigInteger(1, digest.digest()));
     }
 
-    //------------------------------------Enviar hash al server------------------------------------
+    private void insertHash(){
+        StringRequest stringRequest=new StringRequest(Request.Method.POST, "http://192.168.1.148/appNFC/almacenar_otp.php", new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+            if (!response.isEmpty()){
+                System.out.println("Si jala");
+            }
 
-        private Context context;
+            }
 
-        public void SendHash(Context context) {
-            this.context = context;
-        }
+        }, new Response.ErrorListener(){
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Toast.makeText(PrincipalActivity.this, error.toString(), Toast.LENGTH_SHORT).show();
+            }
+        }){
+            @Nullable
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                Map<String,String> parametros=new HashMap<String,String>();
+                parametros.put("shaSum",shaSum);
+                return parametros;
+            }
 
-        public void send(final String shaSum) {
-            RequestQueue queue = Volley.newRequestQueue(context);
-            String url = "http://192.168.0.137/appNFC/almacenar_otp.php";
-
-            StringRequest postRequest = new StringRequest(Request.Method.POST, url,
-                    new Response.Listener<String>()
-                    {
-                        @Override
-                        public void onResponse(String response) {
-                            // respuesta del servidor
-                        }
-                    },
-                    new Response.ErrorListener()
-                    {
-                        @Override
-                        public void onErrorResponse(VolleyError error) {
-                            // manejo de errores
-                        }
-                    }
-            ) {
-                @Override
-                protected Map<String, String> getParams()
-                {
-                    Map<String, String>  params = new HashMap<>();
-                    params.put("hash", shaSum);
-                    return params;
-                }
-            };
-
-            queue.add(postRequest);
-        }
-
+        };
+        RequestQueue requestQueue= Volley.newRequestQueue(this);
+        requestQueue.add(stringRequest);
+    }
 
 }
