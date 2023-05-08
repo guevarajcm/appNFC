@@ -86,7 +86,7 @@ public class PrincipalActivity extends AppCompatActivity {
         } else {
             cajaBienvenido.setText("Bienvenido(a), profe(a).");
         }
-            stringtoreceive=extras.getString("STRING_I_NEED");
+        stringtoreceive=extras.getString("STRING_I_NEED");
         cajaBienvenido.setText("Bienvenido(a), profe(a). "+stringtoreceive+".");
 
         ActivateButton.setOnClickListener(new View.OnClickListener() {
@@ -103,13 +103,16 @@ public class PrincipalActivity extends AppCompatActivity {
                     System.arraycopy(language,0,payload,1, language.length);
                     System.arraycopy(text,0,payload,1 + language.length, text.length);
 
-                    NdefRecord record = new NdefRecord(NdefRecord.TNF_WELL_KNOWN,NdefRecord.RTD_TEXT, new byte[0], payload);
+                    NdefRecord record = new NdefRecord(NdefRecord.TNF_WELL_KNOWN, NdefRecord.RTD_TEXT, new byte[0], payload);
                     messageToWrite = new NdefMessage(new NdefRecord[]{record});
                     textView.setText("Acerca la etiqueta NFC al dispositivo");
                     enableWrite();
                     listeningAnimation.playAnimation(); // Iniciar animación
                 } catch (UnsupportedEncodingException e) {
                     e.printStackTrace();
+                    String errorMessage = e.getMessage();
+                    String activityName = "PrincipalActivity";
+                    insertErrorLog(errorMessage, activityName);
                 }
             }
         });
@@ -183,8 +186,14 @@ public class PrincipalActivity extends AppCompatActivity {
                     Toast.makeText(this, "Se ha añadido el token a la NFC TAG", Toast.LENGTH_SHORT).show();
                     insertHash();
                 }
-            }catch (FormatException | IOException e){
-                throw new RuntimeException(e);
+            }catch (FormatException | IOException e) {
+                e.printStackTrace();
+                Toast.makeText(this, "No se pudo escribir en la etiqueta NFC", Toast.LENGTH_LONG).show();
+
+                // Llamada al método insertErrorLog para registrar el error en la tabla logs
+                String errorMessage = e.getMessage();
+                String activityName = "PrincipalActivity";
+                insertErrorLog(errorMessage, activityName);
             }finally {
                 messageToWrite = null;
             }
@@ -270,5 +279,37 @@ public class PrincipalActivity extends AppCompatActivity {
         RequestQueue requestQueue= Volley.newRequestQueue(this);
         requestQueue.add(stringRequest);
     }
+
+    // Método para insertar un registro de error en la tabla logs
+    private void insertErrorLog(String errorMessage, String activityName) {
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, "http://192.168.1.148/appNFC/insert_error_log.php",
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        // Si la respuesta del servidor no está vacía, se insertó correctamente el registro del error
+                        if (!response.isEmpty()) {
+                            System.out.println("Error registrado correctamente");
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Toast.makeText(PrincipalActivity.this, "Error al insertar el registro de error: " + error.toString(), Toast.LENGTH_SHORT).show();
+                    }
+                }) {
+            @Nullable
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                Map<String, String> parametros = new HashMap<String, String>();
+                parametros.put("error_message", errorMessage);
+                parametros.put("activity_name", activityName);
+                return parametros;
+            }
+        };
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+        requestQueue.add(stringRequest);
+    }
+
 
 }
