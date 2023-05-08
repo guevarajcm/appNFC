@@ -23,6 +23,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.airbnb.lottie.LottieAnimationView;
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -52,6 +53,7 @@ public class PrincipalActivity extends AppCompatActivity {
     private IntentFilter[] writeFilters;
     private String[][] writeTechList;
     private String shaSum;
+    private LottieAnimationView listeningAnimation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,6 +73,7 @@ public class PrincipalActivity extends AppCompatActivity {
                 {NdefFormatable.class.getName()}
         };
 
+        listeningAnimation = findViewById(R.id.listeningAnimation);
 
         processNFC(getIntent());
 
@@ -79,8 +82,11 @@ public class PrincipalActivity extends AppCompatActivity {
         cajaBienvenido=(TextView) findViewById(R.id.textViewBienvenida);
 
         Bundle extras = getIntent().getExtras();
-        stringtoreceive=extras.getString("STRING_I_NEED");
-
+        if (extras != null) {
+        } else {
+            cajaBienvenido.setText("Bienvenido(a), profe(a).");
+        }
+            stringtoreceive=extras.getString("STRING_I_NEED");
         cajaBienvenido.setText("Bienvenido(a), profe(a). "+stringtoreceive+".");
 
         ActivateButton.setOnClickListener(new View.OnClickListener() {
@@ -100,9 +106,9 @@ public class PrincipalActivity extends AppCompatActivity {
                     NdefRecord record = new NdefRecord(NdefRecord.TNF_WELL_KNOWN,NdefRecord.RTD_TEXT, new byte[0], payload);
                     messageToWrite = new NdefMessage(new NdefRecord[]{record});
                     textView.setText("Acerca la etiqueta NFC al dispositivo");
-
                     enableWrite();
-                }catch (UnsupportedEncodingException e){
+                    listeningAnimation.playAnimation(); // Iniciar animación
+                } catch (UnsupportedEncodingException e) {
                     e.printStackTrace();
                 }
             }
@@ -183,8 +189,13 @@ public class PrincipalActivity extends AppCompatActivity {
                 messageToWrite = null;
             }
         }
+        pauseListeningAnimation();
+        textView.setText("Token OTP escrito correctamente");
     }
-
+    private void pauseListeningAnimation() {
+        LottieAnimationView listeningAnimation = findViewById(R.id.listeningAnimation);
+        listeningAnimation.pauseAnimation();
+    }
     private void readTag(Intent intent) {
         Parcelable[] messages = intent.getParcelableArrayExtra((NfcAdapter.EXTRA_NDEF_MESSAGES));
         textView.setText("");
@@ -235,9 +246,9 @@ public class PrincipalActivity extends AppCompatActivity {
         StringRequest stringRequest=new StringRequest(Request.Method.POST, "http://192.168.1.148/appNFC/almacenar_otp.php", new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-            if (!response.isEmpty()){
-                System.out.println("Si jala");
-            }
+                if (!response.isEmpty()){
+                    System.out.println("Si jala");
+                }
 
             }
 
