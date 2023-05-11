@@ -102,40 +102,32 @@ public class MainActivity extends AppCompatActivity {
                             Toast.makeText(MainActivity.this, "Credenciales incorrectas, verifique e intente de nuevo", Toast.LENGTH_SHORT).show();
                         }
                     } catch (JSONException e) {
-                        // Manejar el error y enviarlo a la base de datos
                         String errorMessage = "Error al procesar la respuesta JSON: " + e.toString();
-                        logError(errorMessage); // Llamar a la función para registrar el error en la base de datos
+                        logError(errorMessage);
                     }
                 } else {
-                    // Manejar el error cuando la respuesta está vacía y enviarlo a la base de datos
                     String errorMessage = "Respuesta vacía al validar el usuario";
-                    logError(errorMessage); // Llamar a la función para registrar el error en la base de datos
+                    logError(errorMessage);
                 }
             }
 
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                String errorMessage = error.toString();
+                String errorMessage = error.getMessage() != null ? error.getMessage() : error.toString();
                 Toast.makeText(MainActivity.this, errorMessage, Toast.LENGTH_SHORT).show();
-                logError(errorMessage); // Llamar a la función para registrar el error en la base de datos
+                logError(errorMessage);
             }
         }) {
             @Nullable
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
                 Map<String, String> parametros = new HashMap<String, String>();
-
-                String usuario = (user != null) ? user : "usuario_predeterminado";
-                String contrasena = (password != null) ? password : "contraseña_predeterminada";
-
-                parametros.put("usuario", usuario);
-                parametros.put("password", contrasena);
+                parametros.put("usuario", user);
+                parametros.put("password", password);
                 return parametros;
             }
-
         };
-
         RequestQueue requestQueue = Volley.newRequestQueue(this);
         requestQueue.add(stringRequest);
     }
@@ -158,8 +150,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
                 Map<String, String> parametros = new HashMap<String, String>();
-                parametros.put("usuario", user);
-                parametros.put("error", errorMessage);
+                parametros.put("error_message", errorMessage);
+                parametros.put("activity_name", "MainActivity");
                 return parametros;
             }
         };
@@ -188,13 +180,15 @@ public class MainActivity extends AppCompatActivity {
         try {
             digest = MessageDigest.getInstance("SHA-256");
         } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
+            logError(e.getMessage());
         }
         digest.reset();
         try {
             digest.update(password.getBytes("utf8"));
         } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
+            logError(e.getMessage());
         }
         password = String.format("%064x", new BigInteger(1, digest.digest()));
     }
