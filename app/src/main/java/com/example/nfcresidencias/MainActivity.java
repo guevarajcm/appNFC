@@ -36,7 +36,8 @@ public class MainActivity extends AppCompatActivity {
 
     EditText edtUser, edtPassword;
     Button btnLogin, btnAlert;
-    String user, password, nombres;
+    String user, password, nombres, user_noTrabajador;
+    String url = "http://192.168.100.20/";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -133,7 +134,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void logError(String errorMessage) {
-        StringRequest logRequest = new StringRequest(Request.Method.POST, "http://192.168.1.148/appNFC/log_error.php", new Response.Listener<String>() {
+        StringRequest logRequest = new StringRequest(Request.Method.POST, url + "appNFC/log_error.php", new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 // Procesar la respuesta del servidor si es necesario
@@ -195,7 +196,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void validateUser() {
         if (!user.isEmpty() && !password.isEmpty()) {
-            validateUser("http://192.168.1.148/appNFC/validar_usuario.php");
+            validateUser(url + "appNFC/validar_usuario.php");
         } else {
             Toast.makeText(MainActivity.this, "No se permiten campos vacíos", Toast.LENGTH_SHORT).show();
         }

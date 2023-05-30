@@ -2,8 +2,9 @@
 include 'conexion.php';
 
 $hash = $_POST["shaSum"];
+$user_noTrabajador = $_POST["user_noTrabajador"];
 
-$sql = "INSERT INTO otps (hashes) VALUES ('$hash')";
+$sql = "INSERT INTO otps (hashes, user_noTrabajador) VALUES ('$hash', '$user_noTrabajador')";
 
 if ($conexion->query($sql)) {
     echo "La variable fue insertada en la base de datos";

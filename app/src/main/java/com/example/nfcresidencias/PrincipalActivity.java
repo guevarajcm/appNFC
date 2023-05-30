@@ -46,6 +46,8 @@ public class PrincipalActivity extends AppCompatActivity {
 
     Button buttonLogout, ActivateButton;
     String stringtoreceive;
+    String user_noTrabajador = "111000111";
+    String url = "http://192.168.100.20/";
     TextView cajaBienvenido, textView;
     private EditText inputView;
     private PendingIntent pendingIntent;
@@ -63,6 +65,7 @@ public class PrincipalActivity extends AppCompatActivity {
         //inputView = (EditText) findViewById(R.id.input);
 
         Intent intent = new Intent(this,getClass());
+        user_noTrabajador = intent.getStringExtra("user_noTrabajador");
         intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
         pendingIntent = PendingIntent.getActivity(this,0,intent,PendingIntent.FLAG_MUTABLE);
@@ -252,7 +255,7 @@ public class PrincipalActivity extends AppCompatActivity {
     }
 
     private void insertHash(){
-        StringRequest stringRequest=new StringRequest(Request.Method.POST, "http://192.168.1.148/appNFC/almacenar_otp.php", new Response.Listener<String>() {
+        StringRequest stringRequest=new StringRequest(Request.Method.POST, url + "appNFC/almacenar_otp.php", new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 if (!response.isEmpty()){
@@ -282,7 +285,7 @@ public class PrincipalActivity extends AppCompatActivity {
 
     // Método para insertar un registro de error en la tabla logs
     private void insertErrorLog(String errorMessage, String activityName) {
-        StringRequest stringRequest = new StringRequest(Request.Method.POST, "http://192.168.1.148/appNFC/insert_error_log.php",
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, url + "appNFC/insert_error_log.php",
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {

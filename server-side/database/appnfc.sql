@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 11-05-2023 a las 19:41:57
+-- Tiempo de generación: 30-05-2023 a las 08:28:38
 -- Versión del servidor: 10.4.27-MariaDB
 -- Versión de PHP: 8.2.0
 
@@ -43,7 +43,8 @@ CREATE TABLE `logs` (
 CREATE TABLE `otps` (
   `id` int(11) NOT NULL,
   `hashes` varchar(64) NOT NULL,
-  `timestamp` timestamp NOT NULL DEFAULT current_timestamp()
+  `timestamp` timestamp NOT NULL DEFAULT current_timestamp(),
+  `user_noTrabajador` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -55,7 +56,8 @@ CREATE TABLE `otps` (
 CREATE TABLE `otps_old` (
   `id` int(11) NOT NULL,
   `hashes` varchar(64) DEFAULT NULL,
-  `timestamp` timestamp NOT NULL DEFAULT current_timestamp()
+  `timestamp` timestamp NOT NULL DEFAULT current_timestamp(),
+  `user_noTrabajador` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -121,10 +123,10 @@ DELIMITER $$
 --
 -- Eventos
 --
-CREATE DEFINER=`root`@`localhost` EVENT `move_old_otps` ON SCHEDULE EVERY 1 MINUTE STARTS '2023-05-08 14:48:28' ON COMPLETION NOT PRESERVE ENABLE DO BEGIN
+CREATE DEFINER=`root`@`localhost` EVENT `move_old_otps` ON SCHEDULE EVERY 30 SECOND STARTS '2023-05-08 14:48:00' ON COMPLETION NOT PRESERVE ENABLE DO BEGIN
     -- Insertar registros con más de 5 minutos de vida en otps_old
-    INSERT INTO otps_old (id, hashes, timestamp)
-    SELECT id, hashes, timestamp
+    INSERT INTO otps_old (id, hashes, timestamp, user_noTrabajador)
+    SELECT id, hashes, timestamp, user_noTrabajador
     FROM otps
     WHERE TIMESTAMPDIFF(MINUTE, timestamp, NOW()) > 5;
 
